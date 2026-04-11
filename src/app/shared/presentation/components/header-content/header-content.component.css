@@ -1,0 +1,18 @@
+.custom-toolbar {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  height: 100px;
+  background-color: #00A881;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.example-spacer {
+  flex: 1 1 auto;
+}
+
+button {
+  margin-right: 16px;
+}

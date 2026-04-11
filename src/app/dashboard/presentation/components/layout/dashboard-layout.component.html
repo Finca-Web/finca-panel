@@ -1,0 +1,30 @@
+<app-header-content></app-header-content>
+<main class="dashboard-content">
+  <h1>Bienvenido</h1>
+  <section class="dashboard-actions" aria-label="Acciones principales">
+    <button
+      type="button"
+      class="action-btn"
+      aria-label="Propiedades"
+      [class.is-active]="selectedAction === 'properties'"
+      [attr.aria-pressed]="selectedAction === 'properties'"
+      (click)="toggleAction('properties')"
+      [routerLink]="['/properties']"
+    >
+      <mat-icon aria-hidden="true">home</mat-icon>
+      <span>Propiedades</span>
+    </button>
+
+    <button
+      type="button"
+      class="action-btn"
+      aria-label="Consultas"
+      [class.is-active]="selectedAction === 'consultas'"
+      [attr.aria-pressed]="selectedAction === 'consultas'"
+      (click)="toggleAction('consultas')"
+    >
+      <mat-icon aria-hidden="true">person</mat-icon>
+      <span>Consultas</span>
+    </button>
+  </section>
+</main>
