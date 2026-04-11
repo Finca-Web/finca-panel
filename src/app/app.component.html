@@ -1,2 +1,4 @@
-<app-layout/>
-<router-outlet/>
+<app-layout></app-layout>
+<div class="route-shell" [@routeTransition]="prepareRoute(outlet)">
+  <router-outlet #outlet="outlet"></router-outlet>
+</div>
