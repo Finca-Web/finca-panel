@@ -1,0 +1,82 @@
+h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.actions-row {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 2rem;
+}
+
+.new-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.3rem;
+  border: 1px solid #22a447;
+  border-radius: 10px;
+  background-color: #22a447;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.28s ease,
+    color 0.28s ease;
+}
+
+.new-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  border-color: #1f8c3c;
+}
+
+.new-button:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.35);
+  outline-offset: 2px;
+}
+
+.new-button__icon {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.new-button__label {
+  position: relative;
+  text-decoration: none;
+}
+
+.new-button__label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 2px;
+  background-color: #ffffff;
+  transform: scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.new-button:hover .new-button__label::after,
+.new-button:focus-visible .new-button__label::after,
+.new-button:active .new-button__label::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .new-button,
+  .new-button__label::after {
+    transition: none;
+  }
+}

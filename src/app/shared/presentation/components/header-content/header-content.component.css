@@ -13,6 +13,16 @@
   flex: 1 1 auto;
 }
 
-button {
-  margin-right: 16px;
+.example-icon {
+  margin-right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: transparent;
+  color: #000000;
+  border: 3px solid #000000;
+}
+
+.example-icon mat-icon {
+  color: #000000;
 }
