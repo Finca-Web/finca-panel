@@ -2,6 +2,11 @@ import { bootstrapApplication, BootstrapContext } from '@angular/platform-browse
 import { AppComponent } from './app/app.component';
 import { config } from './app/app.config.server';
 
-export default function bootstrap(context: BootstrapContext) {
-  return bootstrapApplication(AppComponent, config, context);
+export default function bootstrap(context?: BootstrapContext) {
+  if (context) {
+    return bootstrapApplication(AppComponent, config, context);
+  }
+
+  return bootstrapApplication(AppComponent, config);
 }
+

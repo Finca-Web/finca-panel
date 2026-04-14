@@ -7,3 +7,27 @@
     <span class="new-button__label">Nuevo</span>
   </button>
 </div>
+
+@if (isLoading) {
+  <p class="status-message">Cargando propiedades...</p>
+}
+
+@if (!isLoading && errorMessage) {
+  <p class="status-message error">{{ errorMessage }}</p>
+}
+
+@if (!isLoading && !errorMessage) {
+  <section class="properties-list" aria-label="Listado de propiedades">
+    <h2>Propiedades registradas</h2>
+    @if (properties.length === 0) {
+      <p class="status-message">No hay propiedades para mostrar.</p>
+    }
+    @for (property of properties; track property.id) {
+      <article class="property-item">
+        <h3>{{ property.title }}</h3>
+        <p>{{ property.department }} - {{ property.operationType }}</p>
+      </article>
+    }
+  </section>
+}
+

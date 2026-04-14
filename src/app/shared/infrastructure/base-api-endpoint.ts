@@ -1,4 +1,4 @@
-import {HttpClient, HttpErrorResponse} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
 import {Observable, throwError} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 import {BaseEntity} from './base-entity';
@@ -29,10 +29,9 @@ export abstract class BaseApiEndpoint<
    * Retrieves all entities from the API, handling both response objects and arrays.
    * @returns An Observable for an array of entities.
    */
-  getAll(): Observable<TEntity[]> {
-    return this.http.get<TResponse | TResource[]>(this.endpointUrl).pipe(
+  getAll(params?: HttpParams): Observable<TEntity[]> {
+    return this.http.get<TResponse | TResource[]>(this.endpointUrl, { params }).pipe(
       map(response => {
-        console.log(response);
         if (Array.isArray(response)) {
           return response.map(resource => this.assembler.toEntityFromResource(resource));
         }
@@ -105,7 +104,11 @@ export abstract class BaseApiEndpoint<
       } else if (error.error instanceof ErrorEvent) {
         errorMessage = `${operation}: ${error.error.message}`;
       } else {
-        errorMessage = `${operation}: ${error.statusText || 'Unexpected error'}`;
+        const backendMessage =
+          (typeof error.error === 'string' && error.error) ||
+          error.error?.message ||
+          error.error?.error;
+        errorMessage = `${operation}: ${backendMessage || error.statusText || 'Unexpected error'}`;
       }
       return throwError(() => new Error(errorMessage));
     };
