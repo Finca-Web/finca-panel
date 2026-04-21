@@ -97,9 +97,19 @@ export abstract class BaseApiEndpoint<
    * @returns A function that transforms an error into an Observable.
    */
   protected handleError(operation: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
+    return (error: unknown): Observable<never> => {
+      if (error instanceof Error && !(error instanceof HttpErrorResponse)) {
+        return throwError(() => new Error(`${operation}: ${error.message}`));
+      }
+
+      if (!(error instanceof HttpErrorResponse)) {
+        return throwError(() => new Error(`${operation}: Unexpected error`));
+      }
+
       let errorMessage = operation;
-      if (error.status === 404) {
+      if (error.status === 0) {
+        errorMessage = `${operation}: Unable to connect to API (${error.url ?? this.endpointUrl})`;
+      } else if (error.status === 404) {
         errorMessage = `${operation}: Resource not found`;
       } else if (error.error instanceof ErrorEvent) {
         errorMessage = `${operation}: ${error.error.message}`;

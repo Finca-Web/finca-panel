@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {PropertyEntity} from '../domain/model/Property.entity';
 import {
+  CreatePropertyRequest,
   ImageUploadResource,
   PropertySearchParams
 } from '../infrastructure/properties-response';
@@ -29,6 +30,10 @@ export class PropertiesService {
 
   uploadImages(propertyId: number, files: File[]): Observable<ImageUploadResource[]> {
     return this.propertiesApiEndpoint.uploadImages(propertyId, files);
+  }
+
+  create(request: CreatePropertyRequest): Observable<PropertyEntity> {
+    return this.propertiesApiEndpoint.createProperty(request);
   }
 }
 

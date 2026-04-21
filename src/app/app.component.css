@@ -4,6 +4,7 @@
 
 .route-shell {
   position: relative;
-  min-height: 1px;
+  min-height: calc(100vh - 100px);
+  overflow: visible;
 }
 

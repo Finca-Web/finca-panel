@@ -21,10 +21,7 @@ h1 {
 
 .properties-list {
   margin: 1rem 2rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #ffffff;
-  padding: 1rem;
+  padding: 0.5rem 0;
 }
 
 .properties-list h2 {
@@ -32,23 +29,111 @@ h1 {
   font-size: 1.15rem;
 }
 
-.property-item {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #f3f4f6;
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 0.8rem;
 }
 
-.property-item:last-child {
-  border-bottom: 0;
+.property-card {
+  border-radius: 14px;
+  overflow: hidden;
 }
 
-.property-item h3 {
+.property-card mat-card-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.property-card img[mat-card-image] {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.property-card mat-card-content {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 0.8rem;
+}
+
+.property-card mat-card-content p {
   margin: 0;
-  font-size: 1rem;
+  color: #6b7280;
 }
 
-.property-item p {
-  margin: 0.3rem 0 0;
-  color: #6b7280;
+.property-card mat-card-actions {
+  padding: 0.75rem 1rem 1rem;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.28s ease,
+    color 0.28s ease;
+}
+
+.action-button mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.edit-button {
+  background-color: #2ec4b6;
+  border-color: #2ec4b6;
+}
+
+.delete-button {
+  background-color: #ef4444;
+  border-color: #ef4444;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.edit-button:hover {
+  border-color: #21a99d;
+  background-color: #21a99d;
+}
+
+.delete-button:hover {
+  border-color: #dc2626;
+  background-color: #dc2626;
+}
+
+.action-button:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.35);
+  outline-offset: 2px;
+}
+
+mat-paginator {
+  margin-top: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
 }
 
 .new-button {
@@ -57,7 +142,7 @@ h1 {
   gap: 0.6rem;
   padding: 0.8rem 1.3rem;
   border: 1px solid #22a447;
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: #22a447;
   color: #ffffff;
   font-size: 1rem;
@@ -118,7 +203,8 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
   .new-button,
-  .new-button__label::after {
+  .new-button__label::after,
+  .action-button {
     transition: none;
   }
 }

@@ -2,7 +2,7 @@
 <h1>Bienvenido al Panel de Propiedades</h1>
 
 <div class="actions-row">
-  <button type="button" class="new-button">
+  <button type="button" class="new-button" (click)="openNewRecordDialog()">
     <span class="new-button__icon">+</span>
     <span class="new-button__label">Nuevo</span>
   </button>
@@ -19,15 +19,51 @@
 @if (!isLoading && !errorMessage) {
   <section class="properties-list" aria-label="Listado de propiedades">
     <h2>Propiedades registradas</h2>
+
     @if (properties.length === 0) {
       <p class="status-message">No hay propiedades para mostrar.</p>
-    }
-    @for (property of properties; track property.id) {
-      <article class="property-item">
-        <h3>{{ property.title }}</h3>
-        <p>{{ property.department }} - {{ property.operationType }}</p>
-      </article>
+    } @else {
+      <div class="cards-grid">
+        @for (property of properties; track property.id) {
+          <mat-card class="property-card" appearance="outlined">
+            <mat-card-header>
+              <mat-card-title>{{ property.title }}</mat-card-title>
+            </mat-card-header>
+
+            <img
+              mat-card-image
+              [src]="getCoverImage(property)"
+              [alt]="'Portada de ' + property.title"
+              loading="lazy"
+              decoding="async"
+            />
+
+            <mat-card-content>
+              <p><strong>Precio:</strong> {{ property.priceDollars | currency:'USD':'symbol':'1.0-0' }}</p>
+              <p><strong>Area total:</strong> {{ property.totalArea | number:'1.0-2' }} m2</p>
+            </mat-card-content>
+
+            <mat-card-actions class="card-actions">
+              <button type="button" class="action-button edit-button" aria-label="Editar propiedad">
+                <mat-icon aria-hidden="true">edit</mat-icon>
+              </button>
+              <button type="button" class="action-button delete-button" aria-label="Eliminar propiedad">
+                <mat-icon aria-hidden="true">close</mat-icon>
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
+
+      <mat-paginator
+        [length]="totalElements"
+        [pageSize]="20"
+        [pageSizeOptions]="[20]"
+        [pageIndex]="pageIndex"
+        showFirstLastButtons
+        (page)="onPageChange($event)"
+        aria-label="Paginador de propiedades"
+      ></mat-paginator>
     }
   </section>
 }
-
