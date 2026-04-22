@@ -28,12 +28,16 @@ export class PropertiesService {
     return this.propertiesApiEndpoint.search(filters);
   }
 
-  uploadImages(propertyId: number, files: File[]): Observable<ImageUploadResource[]> {
-    return this.propertiesApiEndpoint.uploadImages(propertyId, files);
+  uploadImages(files: File[]): Observable<ImageUploadResource[]> {
+    return this.propertiesApiEndpoint.uploadImages(files);
   }
 
   create(request: CreatePropertyRequest): Observable<PropertyEntity> {
     return this.propertiesApiEndpoint.createProperty(request);
+  }
+
+  deleteById(id: number): Observable<void> {
+    return this.propertiesApiEndpoint.deleteProperty(id);
   }
 }
 

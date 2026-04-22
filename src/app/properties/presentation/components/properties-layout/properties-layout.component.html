@@ -16,6 +16,10 @@
   <p class="status-message error">{{ errorMessage }}</p>
 }
 
+@if (!isLoading && !errorMessage && deleteErrorMessage) {
+  <p class="status-message error">{{ deleteErrorMessage }}</p>
+}
+
 @if (!isLoading && !errorMessage) {
   <section class="properties-list" aria-label="Listado de propiedades">
     <h2>Propiedades registradas</h2>
@@ -47,7 +51,13 @@
               <button type="button" class="action-button edit-button" aria-label="Editar propiedad">
                 <mat-icon aria-hidden="true">edit</mat-icon>
               </button>
-              <button type="button" class="action-button delete-button" aria-label="Eliminar propiedad">
+              <button
+                type="button"
+                class="action-button delete-button"
+                aria-label="Eliminar propiedad"
+                [disabled]="deletingPropertyId === property.id"
+                (click)="onDeleteProperty(property)"
+              >
                 <mat-icon aria-hidden="true">close</mat-icon>
               </button>
             </mat-card-actions>

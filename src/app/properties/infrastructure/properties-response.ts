@@ -14,7 +14,8 @@ export interface PropertyImageResource extends BaseResource {
   fileName: string;
   filePath: string;
   displayOrder: number;
-  cover: boolean;
+  cover?: boolean;
+  isCover?: boolean;
 }
 
 export interface ImageUploadResource {
@@ -26,7 +27,8 @@ export interface CreatePropertyImageRequest {
   fileName: string;
   filePath: string;
   displayOrder: number;
-  cover: boolean;
+  cover?: boolean;
+  isCover?: boolean;
 }
 
 export interface CreatePropertyRequest {

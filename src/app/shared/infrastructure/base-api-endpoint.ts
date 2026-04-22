@@ -108,14 +108,26 @@ export abstract class BaseApiEndpoint<
 
       let errorMessage = operation;
       if (error.status === 0) {
-        errorMessage = `${operation}: Unable to connect to API (${error.url ?? this.endpointUrl})`;
+        const sizeHint = /upload/i.test(operation)
+          ? ' Verifica que el backend este activo y que el tamano de archivo/request no exceda el limite configurado.'
+          : '';
+        errorMessage = `${operation}: Unable to connect to API (${error.url ?? this.endpointUrl}).${sizeHint}`;
       } else if (error.status === 404) {
         errorMessage = `${operation}: Resource not found`;
       } else if (error.error instanceof ErrorEvent) {
         errorMessage = `${operation}: ${error.error.message}`;
       } else {
+        const validationDetails =
+          (Array.isArray(error.error?.errors) && error.error.errors.join(', ')) ||
+          (error.error?.errors && typeof error.error.errors === 'object'
+            ? Object.entries(error.error.errors)
+                .map(([field, message]) => `${field}: ${String(message)}`)
+                .join(', ')
+            : null);
+
         const backendMessage =
           (typeof error.error === 'string' && error.error) ||
+          validationDetails ||
           error.error?.message ||
           error.error?.error;
         errorMessage = `${operation}: ${backendMessage || error.statusText || 'Unexpected error'}`;

@@ -9,6 +9,7 @@ import { HeaderContentComponent } from '../../../../shared/presentation/componen
 import { PropertyEntity } from '../../../domain/model/Property.entity';
 import { PropertiesService } from '../../../application/properties.service';
 import { NewPropertyDialogComponent } from '../new-property-dialog/new-property-dialog.component';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-properties-layout',
@@ -30,6 +31,8 @@ export class PropertiesLayoutComponent implements OnInit {
   properties: PropertyEntity[] = [];
   isLoading = false;
   errorMessage = '';
+  deleteErrorMessage = '';
+  deletingPropertyId: number | null = null;
   pageIndex = 0;
   pageSize = 20;
   totalElements = 0;
@@ -74,6 +77,7 @@ export class PropertiesLayoutComponent implements OnInit {
   loadProperties(page = 0, size = this.pageSize): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.deleteErrorMessage = '';
 
     this.propertiesService.getPaged(page, size).subscribe({
       next: (page) => {
@@ -94,9 +98,64 @@ export class PropertiesLayoutComponent implements OnInit {
     this.loadProperties(event.pageIndex, event.pageSize);
   }
 
+  onDeleteProperty(property: PropertyEntity): void {
+    if (this.deletingPropertyId !== null) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Seguro que deseas eliminar la propiedad "${property.title}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingPropertyId = property.id;
+    this.deleteErrorMessage = '';
+
+    this.propertiesService.deleteById(property.id).subscribe({
+      next: () => {
+        const targetPage = this.properties.length === 1 && this.pageIndex > 0
+          ? this.pageIndex - 1
+          : this.pageIndex;
+
+        this.deletingPropertyId = null;
+        this.loadProperties(targetPage, this.pageSize);
+      },
+      error: (error: Error) => {
+        this.deletingPropertyId = null;
+        this.deleteErrorMessage = error.message;
+      }
+    });
+  }
+
   getCoverImage(property: PropertyEntity): string {
     const cover = property.images.find((image) => image.cover);
-    return cover?.filePath ?? property.images[0]?.filePath ?? 'https://via.placeholder.com/640x360?text=Sin+imagen';
+    const rawPath = cover?.filePath ?? property.images[0]?.filePath;
+    return this.resolveImageUrl(rawPath);
+  }
+
+  private resolveImageUrl(rawPath?: string): string {
+    const fallback = 'https://via.placeholder.com/640x360?text=Sin+imagen';
+    if (!rawPath) {
+      return fallback;
+    }
+
+    const normalizedPath = rawPath.replace(/\\/g, '/').trim();
+    if (!normalizedPath) {
+      return fallback;
+    }
+
+    if (/^(https?:|data:|blob:)/i.test(normalizedPath)) {
+      return normalizedPath;
+    }
+
+    if (normalizedPath.startsWith('pending-upload/')) {
+      return fallback;
+    }
+
+    const apiBase = environment.serverBasePath;
+    const serverOrigin = apiBase.replace(/\/api\/v\d+$/i, '');
+    const cleanPath = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+    return `${serverOrigin}${cleanPath}`;
   }
 }
 

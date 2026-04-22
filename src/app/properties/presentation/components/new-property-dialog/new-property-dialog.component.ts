@@ -18,6 +18,7 @@ import { StatusTypeLabel } from '../../../domain/model/enums/StatusType-label';
 import { Tag } from '../../../domain/model/enums/Tag.enum';
 import { TagCategory } from '../../../domain/model/enums/TagCategory.enum';
 import { TagMetadata } from '../../../domain/model/enums/TagMetadata';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-new-property-dialog',
@@ -194,6 +195,9 @@ export class NewPropertyDialogComponent implements OnDestroy {
   submit(): void {
     if (this.form.invalid || this.isSubmitting) {
       this.form.markAllAsTouched();
+      if (!this.isSubmitting) {
+        this.errorMessage = 'Revisa los campos obligatorios antes de guardar.';
+      }
       return;
     }
 
@@ -226,7 +230,13 @@ export class NewPropertyDialogComponent implements OnDestroy {
 
     const department = selectedDepartment as Department;
     const selectedDistrict = this.form.controls.district.value;
-    const district = selectedDistrict ? (selectedDistrict as District) : null;
+    const district = department === Department.LIMA && selectedDistrict
+      ? (selectedDistrict as District)
+      : null;
+
+    if (department !== Department.LIMA && selectedDistrict) {
+      this.form.controls.district.setValue('' as District | '', { emitEvent: false });
+    }
 
     if (department === Department.LIMA && !district) {
       this.errorMessage = 'Si el departamento es Lima, debes elegir un distrito.';
@@ -308,40 +318,53 @@ export class NewPropertyDialogComponent implements OnDestroy {
       return;
     }
 
-    const albumImages = this.selectedImages.map((selectedImage, index) => ({
-      fileName: selectedImage.file.name,
-      // Se mantiene un path de referencia temporal hasta integrar upload real.
-      filePath: `pending-upload/${selectedImage.file.name}`,
-      displayOrder: index + 1,
-      cover: selectedImage.isCover
-    }));
-
-    const request: CreatePropertyRequest = {
-      title,
-      priceDollars,
-      priceSoles,
-      department,
-      district,
-      address,
-      propertyType,
-      operationType,
-      totalArea,
-      builtArea,
-      bedrooms,
-      bathrooms,
-      parkings,
-      description,
-      documentationUrl,
-      statusType,
-      featured: this.isFeatured,
-      tags: Array.from(this.selectedTags),
-      images: albumImages
-    };
-
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    this.propertiesService.create(request).subscribe({
+    const filesToUpload = this.selectedImages.map((image) => image.file);
+
+    this.propertiesService.uploadImages(filesToUpload).pipe(
+      switchMap((uploadedImages) => {
+        if (uploadedImages.length !== this.selectedImages.length) {
+          throw new Error('No se pudieron subir todas las imagenes seleccionadas.');
+        }
+
+        const albumImages = uploadedImages.map((uploadedImage, index) => {
+          const selectedImage = this.selectedImages[index];
+          return {
+            fileName: uploadedImage.fileName,
+            filePath: uploadedImage.filePath,
+            displayOrder: index + 1,
+            cover: Boolean(selectedImage?.isCover),
+            isCover: Boolean(selectedImage?.isCover)
+          };
+        });
+
+        const request: CreatePropertyRequest = {
+          title,
+          priceDollars,
+          priceSoles,
+          department,
+          district,
+          address,
+          propertyType,
+          operationType,
+          totalArea,
+          builtArea,
+          bedrooms,
+          bathrooms,
+          parkings,
+          description,
+          documentationUrl,
+          statusType,
+          featured: this.isFeatured,
+          tags: Array.from(this.selectedTags),
+          images: albumImages
+        };
+
+        return this.propertiesService.create(request);
+      })
+    ).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.close({ created: true });

@@ -11,8 +11,9 @@ import {PropertiesAssembler} from './properties-assembler';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
 import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {forkJoin, Observable, of} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
+import {StatusType} from '../domain/model/enums/StatusType.enum';
 
 export interface PropertiesPage {
   data: PropertyEntity[];
@@ -73,6 +74,12 @@ export class PropertiesApiEndpoint extends BaseApiEndpoint<PropertyEntity, Prope
         return;
       }
 
+      if (key === 'statusType') {
+        const mappedStatus = this.toBackendStatusType(value as StatusType);
+        httpParams = httpParams.set(key, mappedStatus);
+        return;
+      }
+
       if (Array.isArray(value)) {
         value.forEach((item) => {
           httpParams = httpParams.append(key, String(item));
@@ -89,20 +96,54 @@ export class PropertiesApiEndpoint extends BaseApiEndpoint<PropertyEntity, Prope
     );
   }
 
-  uploadImages(propertyId: number, files: File[]): Observable<ImageUploadResource[]> {
-    const formData = new FormData();
-    files.forEach((file) => formData.append('files', file, file.name));
+  uploadImages(files: File[]): Observable<ImageUploadResource[]> {
+    if (!files.length) {
+      return of([]);
+    }
 
-    return this.http.post<ImageUploadResource[]>(`${this.endpointUrl}/${propertyId}/images`, formData).pipe(
-      catchError(this.handleError('Failed to upload property images'))
+    const uploadRequests = files.map((file) => {
+      const formData = new FormData();
+      formData.append('files', file, file.name);
+
+      return this.http.post<ImageUploadResource[]>(`${environment.serverBasePath}/uploads/images`, formData).pipe(
+        map((response) => response[0]),
+        catchError(this.handleError(`Failed to upload image ${file.name}`))
+      );
+    });
+
+    return forkJoin(uploadRequests).pipe(
+      map((uploaded) => uploaded.filter((item): item is ImageUploadResource => !!item))
     );
   }
 
   createProperty(request: CreatePropertyRequest): Observable<PropertyEntity> {
-    return this.http.post<PropertyResource>(this.endpointUrl, request).pipe(
+    const payload = {
+      ...request,
+      statusType: this.toBackendStatusType(request.statusType)
+    };
+
+    return this.http.post<PropertyResource>(this.endpointUrl, payload).pipe(
       map((resource) => this.assembler.toEntityFromResource(resource)),
       catchError(this.handleError('Failed to create property'))
     );
+  }
+
+  deleteProperty(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.endpointUrl}/${id}`).pipe(
+      catchError(this.handleError('Failed to delete property'))
+    );
+  }
+
+  private toBackendStatusType(statusType: StatusType): 'A' | 'B' | 'C' {
+    if (statusType === StatusType.NEW) {
+      return 'A';
+    }
+
+    if (statusType === StatusType.SEMI_NEW) {
+      return 'B';
+    }
+
+    return 'C';
   }
 
 }

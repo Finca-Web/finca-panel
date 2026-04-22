@@ -101,12 +101,14 @@ export class PropertiesAssembler
   }
 
   private toImageEntityFromResource(resource: PropertyImageResource): PropertyImageEntity {
+    const cover = resource.cover ?? resource.isCover ?? false;
+
     return new PropertyImageEntity({
       id: resource.id,
       fileName: resource.fileName,
       filePath: resource.filePath,
       displayOrder: resource.displayOrder,
-      cover: resource.cover
+      cover
     });
   }
 
@@ -142,7 +144,13 @@ export class PropertiesAssembler
   }
 
   private normalizeStatusType(value: string): StatusType {
-    return this.mapEnumValue(StatusType, value, StatusTypeLabel, StatusType.NEW);
+    const aliases: Record<string, StatusType> = {
+      A: StatusType.NEW,
+      B: StatusType.SEMI_NEW,
+      C: StatusType.TO_REFORM
+    };
+
+    return this.mapEnumValue(StatusType, value, StatusTypeLabel, StatusType.NEW, aliases);
   }
 
   private normalizeTags(values: string[]): Tag[] {
