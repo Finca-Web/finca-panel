@@ -1,4 +1,75 @@
 /* You can add global styles to this file, and also import other style files */
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { margin: 0; font-family: 'Roboto', sans-serif; }
+
+.mat-typography,
+.mdc-typography,
+.mat-toolbar,
+.mat-mdc-card,
+.mat-mdc-button-base,
+.mat-mdc-paginator,
+.mat-mdc-form-field,
+.mat-mdc-table {
+  font-family: 'Roboto', sans-serif !important;
+}
+
+.material-icons,
+.mat-icon {
+  font-family: 'Material Icons', sans-serif !important;
+}
+
+.new-property-dialog-panel .mat-mdc-dialog-title,
+.new-property-dialog-panel [mat-dialog-title],
+.new-property-dialog-panel .mdc-dialog__title {
+  width: 100%;
+  margin: 0;
+  text-align: center !important;
+  font-weight: 700 !important;
+}
+
+.new-property-dialog-panel .mat-mdc-dialog-surface,
+.new-property-dialog-panel .mdc-dialog__surface {
+  border: 3px solid #000;
+  transform-origin: center;
+  animation: dialog-pop-in 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.new-property-dialog-closing .mat-mdc-dialog-surface,
+.new-property-dialog-closing .mdc-dialog__surface {
+  animation: dialog-pop-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
+}
+
+.new-property-dialog-backdrop.cdk-overlay-backdrop,
+.new-property-dialog-backdrop {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.new-property-dialog-backdrop.cdk-overlay-backdrop.cdk-overlay-backdrop-showing,
+.new-property-dialog-backdrop.cdk-overlay-backdrop-showing {
+  opacity: 1;
+}
+
+@keyframes dialog-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dialog-pop-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+

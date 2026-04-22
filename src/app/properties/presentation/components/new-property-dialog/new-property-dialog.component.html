@@ -1,0 +1,356 @@
+<div class="dialog-title-row" mat-dialog-title>
+  <span class="dialog-title-text">Nuevo Registro</span>
+  <button
+    type="button"
+    class="dialog-featured-toggle"
+    [class.dialog-featured-toggle--active]="isFeatured"
+    (click)="toggleFeatured()"
+    [attr.aria-label]="isFeatured ? 'Quitar destacado' : 'Marcar propiedad como destacada'"
+  >
+    <mat-icon aria-hidden="true">{{ isFeatured ? 'star' : 'star_border' }}</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content class="dialog-content">
+  <form class="quick-create-form" [formGroup]="form" (ngSubmit)="submit()">
+    @if (currentStep === 1) {
+    <div class="inputs-row inputs-row--single">
+      <div class="field field--full" [class.field--invalid]="shouldShowFieldInvalid('title')">
+        <input
+          type="text"
+          formControlName="title"
+          placeholder="Titulo"
+          aria-label="Titulo"
+        />
+      </div>
+    </div>
+
+    <div class="inputs-row inputs-row--three">
+      <div class="field field--title" [class.field--invalid]="shouldShowFieldInvalid('address')">
+        <input
+          type="text"
+          formControlName="address"
+          placeholder="Dirección"
+          aria-label="Dirección"
+        />
+      </div>
+
+      <div class="field-with-prefix field--price" [class.field-with-prefix--invalid]="shouldShowFieldInvalid('priceDollars')">
+        <span class="field-prefix">$</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="priceDollars"
+          placeholder="Dólares"
+          aria-label="Precio en dólares"
+        />
+      </div>
+
+      <div class="field-with-prefix field--price">
+        <span class="field-prefix">S/</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="priceSoles"
+          placeholder="Soles"
+          aria-label="Precio en soles"
+        />
+      </div>
+    </div>
+
+    <div class="inputs-row inputs-row--four">
+      <div class="field field--select" [class.field--invalid]="shouldShowFieldInvalid('department')">
+        <select
+          formControlName="department"
+          aria-label="Departamento"
+          [class.select--placeholder]="!form.controls.department.value"
+        >
+          <option value="" disabled>Departamento</option>
+          @for (department of departments; track department) {
+            <option [value]="department">{{ departmentLabels[department] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field field--select" [class.field--invalid]="shouldShowFieldInvalid('district')">
+        <select
+          formControlName="district"
+          aria-label="Distrito"
+          [class.select--placeholder]="!form.controls.district.value"
+        >
+          <option value="" disabled>Distrito</option>
+          @for (district of districts; track district) {
+            <option [value]="district">{{ districtLabels[district] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field field--select" [class.field--invalid]="shouldShowFieldInvalid('propertyType')">
+        <select
+          formControlName="propertyType"
+          aria-label="Tipo de propiedad"
+          [class.select--placeholder]="!form.controls.propertyType.value"
+        >
+          <option value="" disabled>Tipo de propiedad</option>
+          @for (propertyType of propertyTypes; track propertyType) {
+            <option [value]="propertyType">{{ propertyTypeLabels[propertyType] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field field--select" [class.field--invalid]="shouldShowFieldInvalid('operationType')">
+        <select
+          formControlName="operationType"
+          aria-label="Tipo de operación"
+          [class.select--placeholder]="!form.controls.operationType.value"
+        >
+          <option value="" disabled>Tipo de operación</option>
+          @for (operationType of operationTypes; track operationType) {
+            <option [value]="operationType">{{ operationTypeLabels[operationType] }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="inputs-row inputs-row--five">
+      <div class="field-with-prefix field--price" [class.field-with-prefix--invalid]="shouldShowFieldInvalid('totalArea')">
+        <span class="field-prefix">m2</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="totalArea"
+          placeholder="Area total"
+          aria-label="Area total"
+        />
+      </div>
+
+      <div class="field-with-prefix field--price" [class.field-with-prefix--invalid]="shouldShowFieldInvalid('builtArea')">
+        <span class="field-prefix">m2</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="builtArea"
+          placeholder="Area construida"
+          aria-label="Area construida"
+        />
+      </div>
+
+      <div class="field">
+        <input
+          type="number"
+          min="0"
+          step="1"
+          formControlName="bedrooms"
+          placeholder="Dormitorios"
+          aria-label="Dormitorios"
+        />
+      </div>
+
+      <div class="field">
+        <input
+          type="number"
+          min="0"
+          step="1"
+          formControlName="bathrooms"
+          placeholder="Baños"
+          aria-label="Baños"
+        />
+      </div>
+
+      <div class="field">
+        <input
+          type="number"
+          min="0"
+          step="1"
+          formControlName="parkings"
+          placeholder="Parkings"
+          aria-label="Estacionamientos"
+        />
+      </div>
+    </div>
+
+    <div class="inputs-row inputs-row--two">
+      <div class="field field--select field--status" [class.field--invalid]="shouldShowFieldInvalid('statusType')">
+        <select
+          formControlName="statusType"
+          aria-label="Estado"
+          [class.select--placeholder]="!form.controls.statusType.value"
+        >
+          <option value="" disabled>Estado</option>
+          @for (statusType of statusTypes; track statusType) {
+            <option [value]="statusType">{{ statusTypeLabels[statusType] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field field--documentation">
+        <input
+          type="url"
+          formControlName="documentationUrl"
+          placeholder="Link de Documentación"
+          aria-label="Documentation URL"
+        />
+      </div>
+    </div>
+
+    } @else if (currentStep === 2) {
+    <section class="album-step" aria-label="Album de fotos de la propiedad">
+      <input
+        #fileInput
+        class="file-input-hidden"
+        type="file"
+        accept="image/*"
+        multiple
+        (change)="onFilesSelected($event)"
+      />
+
+      <div class="album-grid">
+        <button
+          type="button"
+          class="add-photo-tile"
+          (click)="openFilePicker(fileInput)"
+          aria-label="Añadir foto"
+        >
+          <span class="add-photo-tile__plus">+</span>
+          <span class="add-photo-tile__text">Añadir foto</span>
+        </button>
+
+        @for (image of selectedImages; track image.previewUrl; let i = $index) {
+          <article class="photo-tile">
+            <button
+              type="button"
+              class="photo-tile__cover"
+              [class.photo-tile__cover--active]="image.isCover"
+              (click)="setCover(i)"
+              [attr.aria-label]="image.isCover ? 'Foto de portada seleccionada' : 'Seleccionar como foto de portada'"
+            >
+              <mat-icon aria-hidden="true">star</mat-icon>
+            </button>
+            <img [src]="image.previewUrl" [alt]="image.file.name" loading="lazy" decoding="async" />
+            <button
+              type="button"
+              class="photo-tile__remove"
+              (click)="removeImage(i)"
+              aria-label="Eliminar foto"
+            >
+              x
+            </button>
+          </article>
+        }
+      </div>
+
+      <p class="album-helper-text" [class.album-helper-text--hidden]="hasAlbumReady">
+        {{ !selectedImages.length
+          ? 'Selecciona imagenes para formar el album de la propiedad.'
+          : 'Debes marcar una foto con estrella como portada.' }}
+      </p>
+    </section>
+
+    } @else if (currentStep === 3) {
+    <section class="description-step" aria-label="Descripcion de la propiedad">
+      <div class="description-editor-toolbar" role="toolbar" aria-label="Herramientas de texto">
+        <button
+          type="button"
+          class="description-tool-button"
+          aria-label="Negrita"
+          (mousedown)="$event.preventDefault()"
+          (click)="applyDescriptionFormat('bold', descriptionEditor)"
+        >
+          <mat-icon aria-hidden="true">format_bold</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="description-tool-button"
+          aria-label="Cursiva"
+          (mousedown)="$event.preventDefault()"
+          (click)="applyDescriptionFormat('italic', descriptionEditor)"
+        >
+          <mat-icon aria-hidden="true">format_italic</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="description-tool-button"
+          aria-label="Subrayado"
+          (mousedown)="$event.preventDefault()"
+          (click)="applyDescriptionFormat('underline', descriptionEditor)"
+        >
+          <mat-icon aria-hidden="true">format_underlined</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="description-tool-button"
+          aria-label="Listado"
+          (mousedown)="$event.preventDefault()"
+          (click)="applyDescriptionFormat('insertUnorderedList', descriptionEditor)"
+        >
+          <mat-icon aria-hidden="true">format_list_bulleted</mat-icon>
+        </button>
+      </div>
+
+      <div class="description-field">
+        <div
+          #descriptionEditor
+          class="description-editor"
+          contenteditable="true"
+          data-placeholder="Descripción"
+          aria-label="Descripción"
+          (input)="onDescriptionInput(descriptionEditor)"
+        ></div>
+      </div>
+    </section>
+
+    } @else {
+    <section class="tags-step" aria-label="Tags de la propiedad">
+      @for (group of tagGroups; track group.category) {
+        <div class="tags-category-block">
+          <h3 class="tags-category-title">{{ group.categoryLabel }}</h3>
+
+          <div class="tags-grid">
+            @for (tag of group.tags; track tag.value) {
+              <button
+                type="button"
+                class="tag-pill"
+                [class.tag-pill--selected]="isTagSelected(tag.value)"
+                (click)="toggleTag(tag.value)"
+                [attr.aria-pressed]="isTagSelected(tag.value)"
+              >
+                {{ tag.label }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </section>
+    }
+
+    @if (errorMessage) {
+      <p class="form-error">{{ errorMessage }}</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <div class="dialog-actions__left">
+    <button type="button" class="nav-arrow-button" aria-label="Anterior" (click)="goToPreviousStep()" [disabled]="currentStep === 1">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    </button>
+    <button type="button" class="nav-arrow-button" aria-label="Siguiente" (click)="goToNextStep()" [disabled]="currentStep === maxStep">
+      <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+    </button>
+  </div>
+
+  <div class="dialog-actions__right">
+    <button type="button" class="save-button" [disabled]="isSubmitting" (click)="submit()">
+      Guardar
+    </button>
+    <button type="button" class="close-button" (click)="close()">
+      <span class="close-button__icon">x</span>
+      <span class="close-button__label">Cerrar</span>
+    </button>
+  </div>
+</mat-dialog-actions>
+
