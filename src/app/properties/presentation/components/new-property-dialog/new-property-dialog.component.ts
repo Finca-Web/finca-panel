@@ -1,10 +1,11 @@
-import { Component, inject, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, OnDestroy, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PropertiesService } from '../../../application/properties.service';
-import { CreatePropertyRequest } from '../../../infrastructure/properties-response';
+import { CreatePropertyRequest, ImageUploadResource, UpdatePropertyRequest } from '../../../infrastructure/properties-response';
+import { PropertyEntity } from '../../../domain/model/Property.entity';
 import { Department } from '../../../domain/model/enums/Department.enum';
 import { District } from '../../../domain/model/enums/District.enum';
 import { PropertyType } from '../../../domain/model/enums/PropertyType.enum';
@@ -19,6 +20,28 @@ import { Tag } from '../../../domain/model/enums/Tag.enum';
 import { TagCategory } from '../../../domain/model/enums/TagCategory.enum';
 import { TagMetadata } from '../../../domain/model/enums/TagMetadata';
 import { switchMap } from 'rxjs/operators';
+import { environment } from '../../../../../environments/environment';
+
+export type NewPropertyDialogMode = 'create' | 'edit';
+
+export interface NewPropertyDialogData {
+  mode: NewPropertyDialogMode;
+  property?: PropertyEntity;
+}
+
+export interface NewPropertyDialogResult {
+  created?: boolean;
+  updated?: boolean;
+}
+
+interface SelectedImageDraft {
+  file?: File;
+  fileName: string;
+  filePath: string;
+  previewUrl: string;
+  isCover: boolean;
+  isObjectUrl: boolean;
+}
 
 @Component({
   selector: 'app-new-property-dialog',
@@ -31,6 +54,8 @@ export class NewPropertyDialogComponent implements OnDestroy {
   currentStep = 1;
   readonly maxStep = 4;
   readonly maxAlbumImages = 25;
+  readonly dialogMode: NewPropertyDialogMode;
+  readonly editingProperty?: PropertyEntity;
   isFeatured = false;
   step1ValidationAttempted = false;
   private isClosing = false;
@@ -49,7 +74,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
   readonly selectedTags = new Set<Tag>();
   isSubmitting = false;
   errorMessage = '';
-  selectedImages: { file: File; previewUrl: string; isCover: boolean }[] = [];
+  selectedImages: SelectedImageDraft[] = [];
 
   @ViewChild('descriptionEditor') private descriptionEditorRef?: ElementRef<HTMLDivElement>;
 
@@ -77,14 +102,22 @@ export class NewPropertyDialogComponent implements OnDestroy {
   });
 
   constructor(
-    private readonly dialogRef: MatDialogRef<NewPropertyDialogComponent>,
-    private readonly propertiesService: PropertiesService
+    private readonly dialogRef: MatDialogRef<NewPropertyDialogComponent, NewPropertyDialogResult>,
+    private readonly propertiesService: PropertiesService,
+    @Inject(MAT_DIALOG_DATA) data: NewPropertyDialogData | null
   ) {
+    this.dialogMode = data?.mode ?? 'create';
+    this.editingProperty = data?.property;
+
     this.form.controls.department.valueChanges.subscribe((departmentValue) => {
       if (departmentValue && departmentValue !== Department.LIMA) {
         this.form.controls.district.setValue('' as District | '');
       }
     });
+
+    if (this.editingProperty) {
+      this.patchFormFromProperty(this.editingProperty);
+    }
   }
 
   goToNextStep(): void {
@@ -146,7 +179,9 @@ export class NewPropertyDialogComponent implements OnDestroy {
     }
 
     const existingSignatures = new Set(
-      this.selectedImages.map(({ file }) => `${file.name}-${file.size}-${file.lastModified}`)
+      this.selectedImages
+        .filter((image): image is SelectedImageDraft & { file: File } => !!image.file)
+        .map(({ file }) => `${file.name}-${file.size}-${file.lastModified}`)
     );
 
     for (const file of files) {
@@ -166,8 +201,11 @@ export class NewPropertyDialogComponent implements OnDestroy {
       existingSignatures.add(signature);
       this.selectedImages.push({
         file,
+        fileName: file.name,
+        filePath: '',
         previewUrl: URL.createObjectURL(file),
-        isCover: false
+        isCover: false,
+        isObjectUrl: true
       });
     }
 
@@ -181,7 +219,10 @@ export class NewPropertyDialogComponent implements OnDestroy {
       return;
     }
 
-    URL.revokeObjectURL(removed.previewUrl);
+    if (removed.isObjectUrl) {
+      URL.revokeObjectURL(removed.previewUrl);
+    }
+
     this.selectedImages.splice(index, 1);
   }
 
@@ -321,24 +362,17 @@ export class NewPropertyDialogComponent implements OnDestroy {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const filesToUpload = this.selectedImages.map((image) => image.file);
+    const filesToUpload = this.selectedImages
+      .filter((image): image is SelectedImageDraft & { file: File } => !!image.file)
+      .map((image) => image.file);
 
     this.propertiesService.uploadImages(filesToUpload).pipe(
       switchMap((uploadedImages) => {
-        if (uploadedImages.length !== this.selectedImages.length) {
+        if (uploadedImages.length !== filesToUpload.length) {
           throw new Error('No se pudieron subir todas las imagenes seleccionadas.');
         }
 
-        const albumImages = uploadedImages.map((uploadedImage, index) => {
-          const selectedImage = this.selectedImages[index];
-          return {
-            fileName: uploadedImage.fileName,
-            filePath: uploadedImage.filePath,
-            displayOrder: index + 1,
-            cover: Boolean(selectedImage?.isCover),
-            isCover: Boolean(selectedImage?.isCover)
-          };
-        });
+        const albumImages = this.buildAlbumImages(uploadedImages);
 
         const request: CreatePropertyRequest = {
           title,
@@ -362,12 +396,14 @@ export class NewPropertyDialogComponent implements OnDestroy {
           images: albumImages
         };
 
-        return this.propertiesService.create(request);
+        return this.dialogMode === 'edit' && this.editingProperty
+          ? this.propertiesService.update(this.editingProperty.id, request as UpdatePropertyRequest)
+          : this.propertiesService.create(request);
       })
     ).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.close({ created: true });
+        this.close(this.dialogMode === 'edit' ? { updated: true } : { created: true });
       },
       error: (error: Error) => {
         this.isSubmitting = false;
@@ -376,7 +412,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
     });
   }
 
-  close(result?: { created: boolean }): void {
+  close(result?: NewPropertyDialogResult): void {
     if (this.isClosing) {
       return;
     }
@@ -389,7 +425,9 @@ export class NewPropertyDialogComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.selectedImages.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    this.selectedImages
+      .filter((image) => image.isObjectUrl)
+      .forEach((image) => URL.revokeObjectURL(image.previewUrl));
   }
 
   applyDescriptionFormat(command: 'bold' | 'italic' | 'underline' | 'insertUnorderedList', editor: HTMLElement): void {
@@ -420,6 +458,92 @@ export class NewPropertyDialogComponent implements OnDestroy {
     const temp = document.createElement('div');
     temp.innerHTML = html;
     return (temp.textContent ?? '').trim();
+  }
+
+  private patchFormFromProperty(property: PropertyEntity): void {
+    this.form.patchValue({
+      title: property.title,
+      priceDollars: String(property.priceDollars),
+      priceSoles: property.priceSoles === null || property.priceSoles === undefined ? '' : String(property.priceSoles),
+      address: property.address,
+      department: property.department,
+      district: property.district ?? '',
+      propertyType: property.propertyType,
+      operationType: property.operationType,
+      totalArea: String(property.totalArea),
+      builtArea: String(property.builtArea),
+      bedrooms: property.bedrooms === null || property.bedrooms === undefined ? '' : String(property.bedrooms),
+      bathrooms: property.bathrooms === null || property.bathrooms === undefined ? '' : String(property.bathrooms),
+      parkings: property.parkings === null || property.parkings === undefined ? '' : String(property.parkings),
+      statusType: property.statusType,
+      documentationUrl: property.documentationUrl,
+      description: property.description
+    });
+
+    this.isFeatured = property.featured;
+    this.selectedTags.clear();
+    property.tags.forEach((tag) => this.selectedTags.add(tag));
+    this.selectedImages = property.images.map((image) => ({
+      fileName: image.fileName,
+      filePath: image.filePath,
+      previewUrl: this.resolvePreviewUrl(image.filePath),
+      isCover: image.cover,
+      isObjectUrl: false
+    }));
+  }
+
+  private resolvePreviewUrl(rawPath: string): string {
+    if (!rawPath) {
+      return 'https://via.placeholder.com/640x360?text=Sin+imagen';
+    }
+
+    const normalizedPath = rawPath.replace(/\\/g, '/').trim();
+    if (!normalizedPath) {
+      return 'https://via.placeholder.com/640x360?text=Sin+imagen';
+    }
+
+    if (/^(https?:|data:|blob:)/i.test(normalizedPath)) {
+      return normalizedPath;
+    }
+
+    if (normalizedPath.startsWith('pending-upload/')) {
+      return 'https://via.placeholder.com/640x360?text=Sin+imagen';
+    }
+
+    const apiBase = environment.serverBasePath;
+    const serverOrigin = apiBase.replace(/\/api\/v\d+$/i, '');
+    const cleanPath = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+    return `${serverOrigin}${cleanPath}`;
+  }
+
+  private buildAlbumImages(uploadedImages: ImageUploadResource[]): CreatePropertyRequest['images'] {
+    let uploadedIndex = 0;
+
+    return this.selectedImages.map((image, index) => {
+      if (image.file) {
+        const uploaded = uploadedImages[uploadedIndex++];
+
+        if (!uploaded) {
+          throw new Error('No se pudo resolver la imagen subida.');
+        }
+
+        return {
+          fileName: uploaded.fileName,
+          filePath: uploaded.filePath,
+          displayOrder: index + 1,
+          cover: image.isCover,
+          isCover: image.isCover
+        };
+      }
+
+      return {
+        fileName: image.fileName,
+        filePath: image.filePath,
+        displayOrder: index + 1,
+        cover: image.isCover,
+        isCover: image.isCover
+      };
+    });
   }
 
   shouldShowFieldInvalid(fieldName:

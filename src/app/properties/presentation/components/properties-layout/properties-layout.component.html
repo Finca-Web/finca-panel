@@ -29,38 +29,33 @@
     } @else {
       <div class="cards-grid">
         @for (property of properties; track property.id) {
-          <mat-card class="property-card" appearance="outlined">
-            <mat-card-header>
-              <mat-card-title>{{ property.title }}</mat-card-title>
-            </mat-card-header>
+          <mat-card class="property-card">
+            <div class="image-wrapper">
+              <img
+                [src]="getCoverImage(property)"
+                [alt]="property.title"
+              />
 
-            <img
-              mat-card-image
-              [src]="getCoverImage(property)"
-              [alt]="'Portada de ' + property.title"
-              loading="lazy"
-              decoding="async"
-            />
+              <div class="overlay">
+                <div class="overlay-top">
+                  <h3>{{ property.address }}</h3>
+                </div>
 
-            <mat-card-content>
-              <p><strong>Precio:</strong> {{ property.priceDollars | currency:'USD':'symbol':'1.0-0' }}</p>
-              <p><strong>Area total:</strong> {{ property.totalArea | number:'1.0-2' }} m2</p>
-            </mat-card-content>
+                <div class="overlay-bottom">
+                  <p>{{ property.priceDollars | currency:'USD':'symbol':'1.0-0' }}</p>
+                </div>
 
-            <mat-card-actions class="card-actions">
-              <button type="button" class="action-button edit-button" aria-label="Editar propiedad">
-                <mat-icon aria-hidden="true">edit</mat-icon>
-              </button>
-              <button
-                type="button"
-                class="action-button delete-button"
-                aria-label="Eliminar propiedad"
-                [disabled]="deletingPropertyId === property.id"
-                (click)="onDeleteProperty(property)"
-              >
-                <mat-icon aria-hidden="true">close</mat-icon>
-              </button>
-            </mat-card-actions>
+                <div class="overlay-actions">
+                  <button type="button" class="icon-button edit-button" (click)="editProperty(property)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+
+                  <button type="button" class="icon-button delete-button" (click)="onDeleteProperty(property)">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
           </mat-card>
         }
       </div>

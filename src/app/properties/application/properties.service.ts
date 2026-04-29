@@ -4,7 +4,8 @@ import {PropertyEntity} from '../domain/model/Property.entity';
 import {
   CreatePropertyRequest,
   ImageUploadResource,
-  PropertySearchParams
+  PropertySearchParams,
+  UpdatePropertyRequest
 } from '../infrastructure/properties-response';
 import {PropertiesApiEndpoint, PropertiesPage} from '../infrastructure/properties-api-endpoint';
 
@@ -34,6 +35,10 @@ export class PropertiesService {
 
   create(request: CreatePropertyRequest): Observable<PropertyEntity> {
     return this.propertiesApiEndpoint.createProperty(request);
+  }
+
+  update(id: number, request: UpdatePropertyRequest): Observable<PropertyEntity> {
+    return (this.propertiesApiEndpoint as any).updateProperty(id, request);
   }
 
   deleteById(id: number): Observable<void> {
