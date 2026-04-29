@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,7 +17,6 @@ import { environment } from '../../../../../environments/environment';
   imports: [
     HeaderContentComponent,
     CurrencyPipe,
-    DecimalPipe,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
@@ -43,6 +42,18 @@ export class PropertiesLayoutComponent implements OnInit {
   ) {}
 
   openNewRecordDialog(): void {
+    this.openPropertyDialog();
+  }
+
+  openEditRecordDialog(property: PropertyEntity): void {
+    this.openPropertyDialog(property);
+  }
+
+  readonly editProperty = (property: PropertyEntity): void => {
+    this.openPropertyDialog(property);
+  };
+
+  private openPropertyDialog(property?: PropertyEntity): void {
     const dialogRef = this.dialog.open(NewPropertyDialogComponent, {
       width: '900px',
       maxWidth: '95vw',
@@ -50,7 +61,8 @@ export class PropertiesLayoutComponent implements OnInit {
       autoFocus: false,
       disableClose: true,
       panelClass: 'new-property-dialog-panel',
-      backdropClass: 'new-property-dialog-backdrop'
+      backdropClass: 'new-property-dialog-backdrop',
+      data: property ? { mode: 'edit', property } : { mode: 'create' }
     });
 
     dialogRef.backdropClick().subscribe(() => {
@@ -63,8 +75,8 @@ export class PropertiesLayoutComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe((result?: { created: boolean }) => {
-      if (result?.created) {
+    dialogRef.afterClosed().subscribe((result?: { created?: boolean; updated?: boolean }) => {
+      if (result?.created || result?.updated) {
         this.loadProperties(this.pageIndex, this.pageSize);
       }
     });

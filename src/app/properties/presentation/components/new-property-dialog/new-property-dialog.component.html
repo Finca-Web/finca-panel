@@ -1,5 +1,5 @@
 <div class="dialog-title-row" mat-dialog-title>
-  <span class="dialog-title-text">Nuevo Registro</span>
+  <span class="dialog-title-text">{{ dialogMode === 'edit' ? 'Editar Registro' : 'Nuevo Registro' }}</span>
   <button
     type="button"
     class="dialog-featured-toggle"
@@ -230,7 +230,7 @@
             >
               <mat-icon aria-hidden="true">star</mat-icon>
             </button>
-            <img [src]="image.previewUrl" [alt]="image.file.name" loading="lazy" decoding="async" />
+            <img [src]="image.previewUrl" [alt]="image.fileName" loading="lazy" decoding="async" />
             <button
               type="button"
               class="photo-tile__remove"
@@ -345,7 +345,7 @@
 
   <div class="dialog-actions__right">
     <button type="button" class="save-button" [disabled]="isSubmitting" (click)="submit()">
-      Guardar
+      {{ dialogMode === 'edit' ? 'Actualizar' : 'Guardar' }}
     </button>
     <button type="button" class="close-button" (click)="close()">
       <span class="close-button__icon">x</span>

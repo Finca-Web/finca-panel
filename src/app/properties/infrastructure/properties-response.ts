@@ -54,6 +54,11 @@ export interface CreatePropertyRequest {
 }
 
 /**
+ * API request payload for updating a property.
+ */
+export interface UpdatePropertyRequest extends CreatePropertyRequest {}
+
+/**
  * API resource/DTO for a property.
  */
 export interface PropertyResource extends BaseResource {

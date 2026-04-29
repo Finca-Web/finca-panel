@@ -5,7 +5,8 @@ import {
   ImageUploadResource,
   PropertyResource,
   PropertiesResponse,
-  PropertySearchParams
+  PropertySearchParams,
+  UpdatePropertyRequest
 } from './properties-response';
 import {PropertiesAssembler} from './properties-assembler';
 import {HttpClient, HttpParams} from '@angular/common/http';
@@ -125,6 +126,18 @@ export class PropertiesApiEndpoint extends BaseApiEndpoint<PropertyEntity, Prope
     return this.http.post<PropertyResource>(this.endpointUrl, payload).pipe(
       map((resource) => this.assembler.toEntityFromResource(resource)),
       catchError(this.handleError('Failed to create property'))
+    );
+  }
+
+  updateProperty(id: number, request: UpdatePropertyRequest): Observable<PropertyEntity> {
+    const payload = {
+      ...request,
+      statusType: this.toBackendStatusType(request.statusType)
+    };
+
+    return this.http.put<PropertyResource>(`${this.endpointUrl}/${id}`, payload).pipe(
+      map((resource) => this.assembler.toEntityFromResource(resource)),
+      catchError(this.handleError('Failed to update property'))
     );
   }
 
