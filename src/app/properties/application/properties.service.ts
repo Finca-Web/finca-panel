@@ -38,11 +38,10 @@ export class PropertiesService {
   }
 
   update(id: number, request: UpdatePropertyRequest): Observable<PropertyEntity> {
-    return (this.propertiesApiEndpoint as any).updateProperty(id, request);
+      return this.propertiesApiEndpoint.updateProperty(id, request);
   }
 
   deleteById(id: number): Observable<void> {
     return this.propertiesApiEndpoint.deleteProperty(id);
   }
 }
-

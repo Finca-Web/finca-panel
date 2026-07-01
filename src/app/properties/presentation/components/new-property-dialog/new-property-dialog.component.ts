@@ -4,7 +4,11 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PropertiesService } from '../../../application/properties.service';
-import { CreatePropertyRequest, ImageUploadResource, UpdatePropertyRequest } from '../../../infrastructure/properties-response';
+import {
+  CreatePropertyRequest,
+  ImageUploadResource,
+  UpdatePropertyRequest
+} from '../../../infrastructure/properties-response';
 import { PropertyEntity } from '../../../domain/model/Property.entity';
 import { Department } from '../../../domain/model/enums/Department.enum';
 import { District } from '../../../domain/model/enums/District.enum';
@@ -35,6 +39,7 @@ export interface NewPropertyDialogResult {
 }
 
 interface SelectedImageDraft {
+  id?: number;
   file?: File;
   fileName: string;
   filePath: string;
@@ -75,6 +80,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
   isSubmitting = false;
   errorMessage = '';
   selectedImages: SelectedImageDraft[] = [];
+  private readonly deletedImageIds = new Set<number>();
 
   @ViewChild('descriptionEditor') private descriptionEditorRef?: ElementRef<HTMLDivElement>;
 
@@ -217,6 +223,10 @@ export class NewPropertyDialogComponent implements OnDestroy {
     const removed = this.selectedImages[index];
     if (!removed) {
       return;
+    }
+
+    if (removed.id) {
+      this.deletedImageIds.add(removed.id);
     }
 
     if (removed.isObjectUrl) {
@@ -374,7 +384,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
 
         const albumImages = this.buildAlbumImages(uploadedImages);
 
-        const request: CreatePropertyRequest = {
+        const baseRequest = {
           title,
           priceDollars,
           priceSoles,
@@ -392,13 +402,20 @@ export class NewPropertyDialogComponent implements OnDestroy {
           documentationUrl,
           statusType,
           featured: this.isFeatured,
-          tags: Array.from(this.selectedTags),
+          tags: Array.from(this.selectedTags)
+        };
+
+        if (this.dialogMode === 'edit' && this.editingProperty) {
+          const updateRequest = this.buildUpdateRequest(baseRequest, albumImages);
+          return this.propertiesService.update(this.editingProperty.id, updateRequest);
+        }
+
+        const createRequest: CreatePropertyRequest = {
+          ...baseRequest,
           images: albumImages
         };
 
-        return this.dialogMode === 'edit' && this.editingProperty
-          ? this.propertiesService.update(this.editingProperty.id, request as UpdatePropertyRequest)
-          : this.propertiesService.create(request);
+        return this.propertiesService.create(createRequest);
       })
     ).subscribe({
       next: () => {
@@ -483,7 +500,9 @@ export class NewPropertyDialogComponent implements OnDestroy {
     this.isFeatured = property.featured;
     this.selectedTags.clear();
     property.tags.forEach((tag) => this.selectedTags.add(tag));
+    this.deletedImageIds.clear();
     this.selectedImages = property.images.map((image) => ({
+      id: image.id,
       fileName: image.fileName,
       filePath: image.filePath,
       previewUrl: this.resolvePreviewUrl(image.filePath),
@@ -528,6 +547,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
         }
 
         return {
+          id: image.id,
           fileName: uploaded.fileName,
           filePath: uploaded.filePath,
           displayOrder: index + 1,
@@ -537,6 +557,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
       }
 
       return {
+        id: image.id,
         fileName: image.fileName,
         filePath: image.filePath,
         displayOrder: index + 1,
@@ -544,6 +565,39 @@ export class NewPropertyDialogComponent implements OnDestroy {
         isCover: image.isCover
       };
     });
+  }
+
+  private buildUpdateRequest(
+    baseRequest: Omit<CreatePropertyRequest, 'images'>,
+    albumImages: CreatePropertyRequest['images']
+  ): UpdatePropertyRequest {
+    const newImages = albumImages
+      .filter((image) => !image.id)
+      .map((image) => ({
+        fileName: image.fileName,
+        filePath: image.filePath,
+        displayOrder: image.displayOrder,
+        cover: !!image.cover
+      }));
+
+    const updatedImages = albumImages
+      .filter((image): image is CreatePropertyRequest['images'][number] & { id: number } => !!image.id)
+      .map((image) => ({
+        imageId: image.id,
+        fileName: image.fileName,
+        filePath: image.filePath,
+        displayOrder: image.displayOrder,
+        cover: !!image.cover
+      }));
+
+    const deletedImages = Array.from(this.deletedImageIds).map((imageId) => ({ imageId }));
+
+    return {
+      ...baseRequest,
+      newImages,
+      updatedImages,
+      deletedImages
+    };
   }
 
   shouldShowFieldInvalid(fieldName:
