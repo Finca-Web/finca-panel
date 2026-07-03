@@ -15,6 +15,8 @@ export interface PropertyEntityProps {
   department: Department;
   district?: District | null;
   address: string;
+  longitude : number | null;
+  latitude : number | null;
   propertyType: PropertyType;
   operationType: OperationType;
   totalArea: number;
@@ -39,6 +41,8 @@ export class PropertyEntity {
   department: Department;
   district: District | null;
   address: string;
+  longitude : number | null;
+  latitude : number | null;
   propertyType: PropertyType;
   operationType: OperationType;
   totalArea: number;
@@ -63,6 +67,8 @@ export class PropertyEntity {
     this.department = props.department;
     this.district = props.district ?? null;
     this.address = props.address;
+    this.longitude = props.longitude ?? null;
+    this.latitude = props.latitude ?? null;
     this.propertyType = props.propertyType;
     this.operationType = props.operationType;
     this.totalArea = props.totalArea;
@@ -73,7 +79,6 @@ export class PropertyEntity {
     this.description = props.description;
     this.documentationUrl = props.documentationUrl ?? null;
 
-    // 🔥 conversión correcta
     this.publishedAt = props.publishedAt
       ? new Date(props.publishedAt)
       : null;
@@ -153,7 +158,6 @@ export class PropertyEntity {
       throw new Error('Price in soles must be > 0');
     }
 
-    // 🔥 VALIDACIÓN CLAVE IGUAL QUE BACKEND
     if (this.department === Department.LIMA && !this.district) {
       throw new Error('District is required when department is Lima');
     }

@@ -179,7 +179,6 @@
   pointer-events: none;
 }
 
-/* Keep number controls from overflowing the field frame */
 .field-with-prefix input[type='number'] {
   appearance: textfield;
   -moz-appearance: textfield;
@@ -201,6 +200,11 @@
   font-weight: 700;
   color: #111827;
   padding-left: 1rem;
+}
+
+.field--title input,
+.field--price input {
+  padding: 0.85rem 0.9rem;
 }
 
 .field-with-prefix input {
