@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+.route-shell {
+  position: relative;
+  min-height: calc(100vh - 100px);
+  overflow: visible;
+}
+

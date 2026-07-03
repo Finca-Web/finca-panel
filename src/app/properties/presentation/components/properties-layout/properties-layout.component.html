@@ -1,0 +1,74 @@
+<app-header-content></app-header-content>
+<h1>Bienvenido al Panel de Propiedades</h1>
+
+<div class="actions-row">
+  <button type="button" class="new-button" (click)="openNewRecordDialog()">
+    <span class="new-button__icon">+</span>
+    <span class="new-button__label">Nuevo</span>
+  </button>
+</div>
+
+@if (isLoading) {
+  <p class="status-message">Cargando propiedades...</p>
+}
+
+@if (!isLoading && errorMessage) {
+  <p class="status-message error">{{ errorMessage }}</p>
+}
+
+@if (!isLoading && !errorMessage && deleteErrorMessage) {
+  <p class="status-message error">{{ deleteErrorMessage }}</p>
+}
+
+@if (!isLoading && !errorMessage) {
+  <section class="properties-list" aria-label="Listado de propiedades">
+    <h2>Propiedades registradas</h2>
+
+    @if (properties.length === 0) {
+      <p class="status-message">No hay propiedades para mostrar.</p>
+    } @else {
+      <div class="cards-grid">
+        @for (property of properties; track property.id) {
+          <mat-card class="property-card">
+            <div class="image-wrapper">
+              <img
+                [src]="getCoverImage(property)"
+                [alt]="property.title"
+              />
+
+              <div class="overlay">
+                <div class="overlay-top">
+                  <h3>{{ property.address }}</h3>
+                </div>
+
+                <div class="overlay-bottom">
+                  <p>{{ property.priceDollars | currency:'USD':'symbol':'1.0-0' }}</p>
+                </div>
+
+                <div class="overlay-actions">
+                  <button type="button" class="icon-button edit-button" (click)="editProperty(property)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+
+                  <button type="button" class="icon-button delete-button" (click)="onDeleteProperty(property)">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </mat-card>
+        }
+      </div>
+
+      <mat-paginator
+        [length]="totalElements"
+        [pageSize]="20"
+        [pageSizeOptions]="[20]"
+        [pageIndex]="pageIndex"
+        showFirstLastButtons
+        (page)="onPageChange($event)"
+        aria-label="Paginador de propiedades"
+      ></mat-paginator>
+    }
+  </section>
+}
