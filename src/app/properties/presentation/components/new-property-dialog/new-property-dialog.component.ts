@@ -353,16 +353,16 @@ export class NewPropertyDialogComponent implements OnDestroy {
     }
 
     const descriptionHtml = this.form.controls.description.value ?? '';
-    const description = this.extractPlainText(descriptionHtml);
+    const plainTextForValidation = this.extractPlainText(descriptionHtml);
 
-    if (!description) {
+    if (!plainTextForValidation) {
       this.currentStep = 3;
       this.errorMessage = 'La descripcion es obligatoria.';
       this.form.controls.description.markAsTouched();
       return;
     }
 
-    if (description.length > 1000) {
+    if (plainTextForValidation.length > 1000) {
       this.currentStep = 3;
       this.errorMessage = 'La descripcion no puede superar 1000 caracteres.';
       this.form.controls.description.markAsTouched();
@@ -398,7 +398,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
           bedrooms,
           bathrooms,
           parkings,
-          description,
+          description: descriptionHtml,
           documentationUrl,
           statusType,
           featured: this.isFeatured,
