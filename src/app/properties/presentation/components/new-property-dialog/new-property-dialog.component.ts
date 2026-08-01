@@ -319,11 +319,6 @@ export class NewPropertyDialogComponent implements OnDestroy {
     const totalArea = Number(this.form.controls.totalArea.value);
     const builtArea = Number(this.form.controls.builtArea.value);
 
-    if (builtArea > totalArea) {
-      this.errorMessage = 'El area construida no puede ser mayor al area total.';
-      this.form.controls.builtArea.markAsTouched();
-      return;
-    }
 
     const rawBedrooms = this.form.controls.bedrooms.value;
     const bedrooms = rawBedrooms === '' || rawBedrooms === null ? null : Number(rawBedrooms);
