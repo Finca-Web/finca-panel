@@ -171,9 +171,7 @@ export class PropertyEntity {
 
     if (this.totalArea <= 0) throw new Error('Total area must be > 0');
     if (this.builtArea <= 0) throw new Error('Built area must be > 0');
-    if (this.builtArea > this.totalArea) {
-      throw new Error('Built area cannot exceed total area');
-    }
+
 
     if (this.bedrooms !== null && this.bedrooms < 0) throw new Error('Bedrooms cannot be negative');
     if (this.bathrooms !== null && this.bathrooms < 0) throw new Error('Bathrooms cannot be negative');
