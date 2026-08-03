@@ -56,10 +56,10 @@ export class PropertiesAssembler
       bathrooms: resource.bathrooms,
       parkings: resource.parkings,
       description: resource.description,
-      documentationUrl: resource.documentationUrl,
       publishedAt: resource.publishedAt,
       statusType: this.normalizeStatusType(resource.statusType),
       featured: resource.featured,
+      antique: resource.antique,
       tags: this.normalizeTags(resource.tags ?? []),
       images: album
     };
@@ -89,10 +89,10 @@ export class PropertiesAssembler
       bathrooms: entity.bathrooms,
       parkings: entity.parkings,
       description: entity.description,
-      documentationUrl: entity.documentationUrl,
       publishedAt: entity.publishedAt ? entity.publishedAt.toISOString() : null,
       statusType: entity.statusType,
       featured: entity.featured,
+      antique: entity.antique,
       tags: entity.tags,
       images: entity.images.map((image) => ({
         id: image.id,
