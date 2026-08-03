@@ -25,7 +25,7 @@ export interface PropertyEntityProps {
   bathrooms?: number | null;
   parkings?: number | null;
   description: string;
-  documentationUrl?: string | null;
+  antique?: number | null;
   publishedAt?: string | Date | null;
   statusType: StatusType;
   featured: boolean;
@@ -51,7 +51,7 @@ export class PropertyEntity {
   bathrooms: number | null;
   parkings: number | null;
   description: string;
-  documentationUrl: string | null;
+  antique: number | null;
   publishedAt: Date | null;
   statusType: StatusType;
   featured: boolean;
@@ -77,7 +77,7 @@ export class PropertyEntity {
     this.bathrooms = props.bathrooms ?? null;
     this.parkings = props.parkings ?? null;
     this.description = props.description;
-    this.documentationUrl = props.documentationUrl ?? null;
+    this.antique = props.antique ?? null;
 
     this.publishedAt = props.publishedAt
       ? new Date(props.publishedAt)

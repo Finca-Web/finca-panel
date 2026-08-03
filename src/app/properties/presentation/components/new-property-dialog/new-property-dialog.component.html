@@ -187,12 +187,15 @@
         </select>
       </div>
 
-      <div class="field field--documentation">
+      <div class="field-with-prefix field--price" [class.field-with-prefix--invalid]="shouldShowFieldInvalid('antique')">
+        <span class="field-prefix">años</span>
         <input
-          type="url"
-          formControlName="documentationUrl"
-          placeholder="Link de Documentación"
-          aria-label="Documentation URL"
+          type="number"
+          min="0"
+          step="1"
+          formControlName="antique"
+          placeholder="Antiguedad"
+          aria-label="Antiguedad"
         />
       </div>
     </div>

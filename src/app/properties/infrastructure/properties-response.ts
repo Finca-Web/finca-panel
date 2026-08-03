@@ -68,7 +68,7 @@ export interface CreatePropertyRequest {
   bathrooms: number | null;
   parkings: number | null;
   description: string;
-  documentationUrl: string | null;
+  antique: number | null;
   statusType: StatusType;
   featured: boolean;
   tags: Tag[];
@@ -95,7 +95,7 @@ export interface UpdatePropertyRequest {
   bathrooms: number | null;
   parkings: number | null;
   description: string;
-  documentationUrl: string | null;
+  antique: number | null;
   statusType: StatusType;
   featured: boolean;
   tags: Tag[];
@@ -124,7 +124,7 @@ export interface PropertyResource extends BaseResource {
   bathrooms: number | null;
   parkings: number | null;
   description: string;
-  documentationUrl: string | null;
+  antique: number | null;
   publishedAt: string | null;
   statusType: StatusType;
   featured: boolean;

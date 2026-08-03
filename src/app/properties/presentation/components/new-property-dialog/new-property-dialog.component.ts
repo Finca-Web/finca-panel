@@ -88,24 +88,24 @@ export class NewPropertyDialogComponent implements OnDestroy {
     return this.selectedImages.length > 0 && this.selectedImages.some((image) => image.isCover);
   }
 
-  readonly form = this.formBuilder.group({
-    title: ['', [Validators.required, Validators.maxLength(100)]],
-    priceDollars: ['', [Validators.required, Validators.min(0.01)]],
-    priceSoles: ['', [Validators.min(0.01)]],
-    address: ['', [Validators.required, Validators.maxLength(200)]],
-    department: ['' as Department | '', [Validators.required]],
-    district: ['' as District | '', []],
-    propertyType: ['' as PropertyType | '', [Validators.required]],
-    operationType: ['' as OperationType | '', [Validators.required]],
-    totalArea: ['', [Validators.required, Validators.min(0.01)]],
-    builtArea: ['', [Validators.required, Validators.min(0.01)]],
-    bedrooms: ['', [Validators.min(0)]],
-    bathrooms: ['', [Validators.min(0)]],
-    parkings: ['', [Validators.min(0)]],
-    statusType: ['' as StatusType | '', [Validators.required]],
-    documentationUrl: ['', [Validators.maxLength(500)]],
-    description: ['', [Validators.required]]
-  });
+   readonly form = this.formBuilder.group({
+     title: ['', [Validators.required, Validators.maxLength(100)]],
+     priceDollars: ['', [Validators.required, Validators.min(0.01)]],
+     priceSoles: ['', [Validators.min(0.01)]],
+     address: ['', [Validators.required, Validators.maxLength(200)]],
+     department: ['' as Department | '', [Validators.required]],
+     district: ['' as District | '', []],
+     propertyType: ['' as PropertyType | '', [Validators.required]],
+     operationType: ['' as OperationType | '', [Validators.required]],
+     totalArea: ['', [Validators.required, Validators.min(0.01)]],
+     builtArea: ['', [Validators.required, Validators.min(0.01)]],
+     bedrooms: ['', [Validators.min(0)]],
+     bathrooms: ['', [Validators.min(0)]],
+     parkings: ['', [Validators.min(0)]],
+     statusType: ['' as StatusType | '', [Validators.required]],
+     antique: ['', [Validators.min(0)]],
+     description: ['', [Validators.required]]
+   });
 
   constructor(
     private readonly dialogRef: MatDialogRef<NewPropertyDialogComponent, NewPropertyDialogResult>,
@@ -127,12 +127,20 @@ export class NewPropertyDialogComponent implements OnDestroy {
   }
 
   goToNextStep(): void {
-    if (this.currentStep === 1) {
-      if (!this.validateStep1BeforeContinue()) {
-        this.errorMessage = 'Completa los campos obligatorios antes de continuar.';
-        return;
-      }
-    }
+     // Si estamos en el step 3, sincronizar el contenido del editor al formulario
+     if (this.currentStep === 3) {
+       const editor = this.descriptionEditorRef?.nativeElement;
+       if (editor) {
+         this.onDescriptionInput(editor);
+       }
+     }
+
+     if (this.currentStep === 1) {
+       if (!this.validateStep1BeforeContinue()) {
+         this.errorMessage = 'Completa los campos obligatorios antes de continuar.';
+         return;
+       }
+     }
 
     if (this.currentStep === 2) {
       if (!this.selectedImages.length) {
@@ -157,16 +165,24 @@ export class NewPropertyDialogComponent implements OnDestroy {
     }
   }
 
-  goToPreviousStep(): void {
-    if (this.currentStep > 1) {
-      this.errorMessage = '';
-      this.currentStep -= 1;
+   goToPreviousStep(): void {
+     // Si estamos en el step 3, sincronizar el contenido del editor al formulario
+     if (this.currentStep === 3) {
+       const editor = this.descriptionEditorRef?.nativeElement;
+       if (editor) {
+         this.onDescriptionInput(editor);
+       }
+     }
 
-      if (this.currentStep === 3) {
-        setTimeout(() => this.syncDescriptionEditorFromForm(), 0);
-      }
-    }
-  }
+     if (this.currentStep > 1) {
+       this.errorMessage = '';
+       this.currentStep -= 1;
+
+       if (this.currentStep === 3) {
+         setTimeout(() => this.syncDescriptionEditorFromForm(), 0);
+       }
+     }
+   }
 
   openFilePicker(input: HTMLInputElement): void {
     input.click();
@@ -329,11 +345,11 @@ export class NewPropertyDialogComponent implements OnDestroy {
     const rawParkings = this.form.controls.parkings.value;
     const parkings = rawParkings === '' || rawParkings === null ? null : Number(rawParkings);
 
-    const propertyType = selectedPropertyType as PropertyType;
-    const operationType = selectedOperationType as OperationType;
-    const statusType = selectedStatusType as StatusType;
-    const rawDocumentationUrl = (this.form.controls.documentationUrl.value ?? '').trim();
-    const documentationUrl = rawDocumentationUrl ? rawDocumentationUrl : null;
+     const propertyType = selectedPropertyType as PropertyType;
+     const operationType = selectedOperationType as OperationType;
+     const statusType = selectedStatusType as StatusType;
+     const rawAntique = this.form.controls.antique.value;
+     const antique = rawAntique === '' || rawAntique === null ? null : Number(rawAntique);
 
     if (!this.selectedImages.length) {
       this.currentStep = 2;
@@ -379,26 +395,26 @@ export class NewPropertyDialogComponent implements OnDestroy {
 
         const albumImages = this.buildAlbumImages(uploadedImages);
 
-        const baseRequest = {
-          title,
-          priceDollars,
-          priceSoles,
-          department,
-          district,
-          address,
-          propertyType,
-          operationType,
-          totalArea,
-          builtArea,
-          bedrooms,
-          bathrooms,
-          parkings,
-          description: descriptionHtml,
-          documentationUrl,
-          statusType,
-          featured: this.isFeatured,
-          tags: Array.from(this.selectedTags)
-        };
+         const baseRequest = {
+           title,
+           priceDollars,
+           priceSoles,
+           department,
+           district,
+           address,
+           propertyType,
+           operationType,
+           totalArea,
+           builtArea,
+           bedrooms,
+           bathrooms,
+           parkings,
+           description: descriptionHtml,
+           antique,
+           statusType,
+           featured: this.isFeatured,
+           tags: Array.from(this.selectedTags)
+         };
 
         if (this.dialogMode === 'edit' && this.editingProperty) {
           const updateRequest = this.buildUpdateRequest(baseRequest, albumImages);
@@ -472,25 +488,25 @@ export class NewPropertyDialogComponent implements OnDestroy {
     return (temp.textContent ?? '').trim();
   }
 
-  private patchFormFromProperty(property: PropertyEntity): void {
-    this.form.patchValue({
-      title: property.title,
-      priceDollars: String(property.priceDollars),
-      priceSoles: property.priceSoles === null || property.priceSoles === undefined ? '' : String(property.priceSoles),
-      address: property.address,
-      department: property.department,
-      district: property.district ?? '',
-      propertyType: property.propertyType,
-      operationType: property.operationType,
-      totalArea: String(property.totalArea),
-      builtArea: String(property.builtArea),
-      bedrooms: property.bedrooms === null || property.bedrooms === undefined ? '' : String(property.bedrooms),
-      bathrooms: property.bathrooms === null || property.bathrooms === undefined ? '' : String(property.bathrooms),
-      parkings: property.parkings === null || property.parkings === undefined ? '' : String(property.parkings),
-      statusType: property.statusType,
-      documentationUrl: property.documentationUrl,
-      description: property.description
-    });
+   private patchFormFromProperty(property: PropertyEntity): void {
+     this.form.patchValue({
+       title: property.title,
+       priceDollars: String(property.priceDollars),
+       priceSoles: property.priceSoles === null || property.priceSoles === undefined ? '' : String(property.priceSoles),
+       address: property.address,
+       department: property.department,
+       district: property.district ?? '',
+       propertyType: property.propertyType,
+       operationType: property.operationType,
+       totalArea: String(property.totalArea),
+       builtArea: String(property.builtArea),
+       bedrooms: property.bedrooms === null || property.bedrooms === undefined ? '' : String(property.bedrooms),
+       bathrooms: property.bathrooms === null || property.bathrooms === undefined ? '' : String(property.bathrooms),
+       parkings: property.parkings === null || property.parkings === undefined ? '' : String(property.parkings),
+       statusType: property.statusType,
+       antique: property.antique === null || property.antique === undefined ? '' : String(property.antique),
+       description: property.description
+     });
 
     this.isFeatured = property.featured;
     this.selectedTags.clear();
