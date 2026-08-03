@@ -94,7 +94,7 @@
 }
 
 .inputs-row--two {
-  grid-template-columns: 1fr 3fr;
+  grid-template-columns: 4fr 1fr;
 }
 
 .inputs-row--three {
