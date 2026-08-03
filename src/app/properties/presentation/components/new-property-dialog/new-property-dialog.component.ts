@@ -611,10 +611,10 @@ export class NewPropertyDialogComponent implements OnDestroy {
     };
   }
 
-  shouldShowFieldInvalid(fieldName:
-    'title' | 'priceDollars' | 'address' | 'department' | 'district' |
-    'propertyType' | 'operationType' | 'totalArea' | 'builtArea' | 'statusType'
-  ): boolean {
+   shouldShowFieldInvalid(fieldName:
+     'title' | 'priceDollars' | 'address' | 'department' | 'district' |
+     'propertyType' | 'operationType' | 'totalArea' | 'builtArea' | 'statusType' | 'antique'
+   ): boolean {
     if (!this.step1ValidationAttempted || this.currentStep !== 1) {
       return false;
     }
