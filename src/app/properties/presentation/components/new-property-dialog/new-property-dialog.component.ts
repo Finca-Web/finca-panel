@@ -137,6 +137,8 @@ export class NewPropertyDialogComponent implements AfterViewChecked, OnDestroy {
     }
 
     const formValue = this.form.controls.description.value ?? '';
+    console.log('[DEBUG] sync check — editor vacio:', !editor.innerHTML, 'formValue:', formValue);
+
     if (editor.innerHTML !== formValue) {
       editor.innerHTML = formValue;
     }
@@ -496,6 +498,7 @@ export class NewPropertyDialogComponent implements AfterViewChecked, OnDestroy {
   }
 
    private patchFormFromProperty(property: PropertyEntity): void {
+     console.log('[DEBUG] description patched:', property.description);
      this.form.patchValue({
        title: property.title,
        priceDollars: String(property.priceDollars),
