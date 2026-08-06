@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, OnDestroy, ViewChild, inject } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, Inject, OnDestroy, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -55,7 +55,7 @@ interface SelectedImageDraft {
   templateUrl: './new-property-dialog.component.html',
   styleUrl: './new-property-dialog.component.css'
 })
-export class NewPropertyDialogComponent implements OnDestroy {
+export class NewPropertyDialogComponent implements AfterViewChecked, OnDestroy {
   currentStep = 1;
   readonly maxStep = 4;
   readonly maxAlbumImages = 25;
@@ -126,6 +126,24 @@ export class NewPropertyDialogComponent implements OnDestroy {
     }
   }
 
+  ngAfterViewChecked(): void {
+    if (this.currentStep !== 3) {
+      return;
+    }
+
+    const editor = this.descriptionEditorRef?.nativeElement;
+    if (!editor || document.activeElement === editor) {
+      return;
+    }
+
+    const formValue = this.form.controls.description.value ?? '';
+    console.log('[DEBUG] sync check — editor vacio:', !editor.innerHTML, 'formValue:', formValue);
+
+    if (editor.innerHTML !== formValue) {
+      editor.innerHTML = formValue;
+    }
+  }
+
   goToNextStep(): void {
      // Si estamos en el step 3, sincronizar el contenido del editor al formulario
      if (this.currentStep === 3) {
@@ -157,11 +175,6 @@ export class NewPropertyDialogComponent implements OnDestroy {
     if (this.currentStep < this.maxStep) {
       this.errorMessage = '';
       this.currentStep += 1;
-
-      if (this.currentStep === 3) {
-        // Espera al render del bloque @else para restaurar el contenido del editor.
-        setTimeout(() => this.syncDescriptionEditorFromForm(), 0);
-      }
     }
   }
 
@@ -177,10 +190,6 @@ export class NewPropertyDialogComponent implements OnDestroy {
      if (this.currentStep > 1) {
        this.errorMessage = '';
        this.currentStep -= 1;
-
-       if (this.currentStep === 3) {
-         setTimeout(() => this.syncDescriptionEditorFromForm(), 0);
-       }
      }
    }
 
@@ -489,6 +498,7 @@ export class NewPropertyDialogComponent implements OnDestroy {
   }
 
    private patchFormFromProperty(property: PropertyEntity): void {
+     console.log('[DEBUG] description patched:', property.description);
      this.form.patchValue({
        title: property.title,
        priceDollars: String(property.priceDollars),
@@ -668,18 +678,6 @@ export class NewPropertyDialogComponent implements OnDestroy {
       (this.form.controls.department.value === Department.LIMA && this.isEmptyValue(this.form.controls.district.value));
 
     return !hasMissingRequired;
-  }
-
-  private syncDescriptionEditorFromForm(): void {
-    const editor = this.descriptionEditorRef?.nativeElement;
-    if (!editor) {
-      return;
-    }
-
-    const descriptionHtml = this.form.controls.description.value ?? '';
-    if (editor.innerHTML !== descriptionHtml) {
-      editor.innerHTML = descriptionHtml;
-    }
   }
 
   private buildTagGroups(): Array<{ category: TagCategory; categoryLabel: string; tags: Array<{ value: Tag; label: string }> }> {
